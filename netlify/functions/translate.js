@@ -1,3 +1,4 @@
+\
 // Netlify Function (CommonJS): translates PPTX by rewriting <a:t>…</a:t> in slide XML.
 // Uses free Google Translate (unofficial). No API key required.
 
