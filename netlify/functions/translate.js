@@ -1,8 +1,7 @@
-\
-// Netlify Function: translates PPTX by rewriting <a:t>text</a:t> values in slide XML.
-// Uses free Google Translate (unofficial endpoint). No API key required.
+// Netlify Function (CommonJS): translates PPTX by rewriting <a:t>…</a:t> in slide XML.
+// Uses free Google Translate (unofficial). No API key required.
 
-import JSZip from 'jszip';
+const JSZip = require('jszip');
 
 function xmlEscape(s) {
   return s
@@ -14,7 +13,6 @@ function xmlEscape(s) {
 }
 
 function* findTextTags(xml) {
-  // Yields {match, start, end, inner}
   const re = /<a:t[^>]*>([\s\S]*?)<\/a:t>/g;
   let m;
   while ((m = re.exec(xml))) {
@@ -27,7 +25,7 @@ function chunkByLength(items, maxChars) {
   let buf = [];
   let len = 0;
   for (const it of items) {
-    const add = it.length + 11; // delimiter length
+    const add = it.length + 11;
     if (len + add > maxChars && buf.length) {
       chunks.push(buf);
       buf = [it];
@@ -80,7 +78,7 @@ async function translateXml(xml, source, target) {
   return out;
 }
 
-export default async (event) => {
+module.exports = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 204, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST,OPTIONS' } };
   }
@@ -97,8 +95,8 @@ export default async (event) => {
 
     const zip = await JSZip.loadAsync(buffer);
 
-    const fileNames = Object.keys(zip.files).filter(name => (
-      name.startsWith('ppt/slides/slide') && name.endsWith('.xml')) ||
+    const fileNames = Object.keys(zip.files).filter(name =>
+      (name.startsWith('ppt/slides/slide') && name.endsWith('.xml')) ||
       (name.startsWith('ppt/notesSlides/notesSlide') && name.endsWith('.xml'))
     );
 
